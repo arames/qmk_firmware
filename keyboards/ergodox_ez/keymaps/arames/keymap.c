@@ -7,7 +7,8 @@
 #define SYMB 1 // Symbols
 #define NUM  2 // Numeric keypad and function keys
 
-
+// Key layout.
+//
 // Left hand.
 // KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,
 // KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,
@@ -30,59 +31,108 @@
 // KC_TRNS ,
 // KC_TRNS , KC_TRNS , KC_TRNS
 
+// Tap Dance.
+
+enum {
+  TD_LSFTCAPS,
+  TD_RSFTCAPS,
+};
+
+// This simple version does not work on macOS, as CAPS has to be pressed for
+// some amount of time.
+// qk_tap_dance_action_t tap_dance_actions[] = {
+//   // Tap once for LShift, and twice for CAPS.
+//   [TD_LSFTCAPS]  = ACTION_TAP_DANCE_DOUBLE(KC_LSFT, KC_CAPS),
+//   // Tap once for RShift, and twice for CAPS.
+//   [TD_RSFTCAPS]  = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS),
+// };
+
+void dance_kccaps_finished(qk_tap_dance_state_t *state, void *user_data, uint16_t kc) {
+  if (state->count == 1) {
+    register_code(kc);
+  } else {
+    register_code(KC_CAPS);
+  }
+}
+void dance_lsftcaps_finished(qk_tap_dance_state_t *state, void *user_data) {
+  dance_kccaps_finished(state, user_data, KC_LSFT);
+}
+void dance_rsftcaps_finished(qk_tap_dance_state_t *state, void *user_data) {
+  dance_kccaps_finished(state, user_data, KC_RSFT);
+}
+void dance_kccaps_reset(qk_tap_dance_state_t *state, void *user_data, uint16_t kc) {
+  if (state->count == 1) {
+    unregister_code(kc);
+  } else {
+    _delay_ms(100); // For macOS.
+    unregister_code(KC_CAPS);
+  }
+}
+void dance_lsftcaps_reset(qk_tap_dance_state_t *state, void *user_data) {
+  dance_kccaps_reset(state, user_data, KC_LSFT);
+}
+void dance_rsftcaps_reset(qk_tap_dance_state_t *state, void *user_data) {
+  dance_kccaps_reset(state, user_data, KC_RSFT);
+}
+qk_tap_dance_action_t tap_dance_actions[] = {
+ [TD_LSFTCAPS] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, dance_lsftcaps_finished, dance_lsftcaps_reset),
+ [TD_RSFTCAPS] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, dance_rsftcaps_finished, dance_rsftcaps_reset)
+};
+
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* Keymap 0: Basic layer
  *
- * ,--------------------------------------------------.           ,--------------------------------------------------.
- * |   `    |   1  |   2  |   3  |   4  |   5  |      |           |      |   6  |   7  |   8  |   9  |   0  |   ]    |
- * |--------+------+------+------+------+-------------|           |------+------+------+------+------+------+--------|
- * |   \    |   Q  |   W  |   E  |   R  |   T  |      |           | Del  |   Y  |   U  |   I  |   O  |   P  |   [    |
- * |--------+------+------+------+------+------|      |           |      |------+------+------+------+------+--------|
- * |   '    |A/Ctrl|   S  |   D  |   F  |   G  |------|           |------|   H  |   J  |   K  |   L  |;/Ctrl|   -    |
- * |--------+------+------+------+------+------| Tab  |           |Bspace|------+------+------+------+------+--------|
- * | LShift |   Z  |   X  |   C  |   V  |   B  |      |           |      |   N  |   M  |   ,  |   .  |   /  | RShift |
- * `--------+------+------+------+------+-------------'           `-------------+------+------+------+------+--------'
- *   | Home | End  | Opt  | Alt  |      |                                       | Left | Down |  Up  |Right |      |
- *   `----------------------------------'                                       `----------------------------------'
+ * ,---------------------------------------------------.           ,-----------------------------------------------------.
+ * |     Esc     |  1  |  2  |  3  |  4  |   5  |      |           |      |   6  |   7  |   8  |   9  |   0  |    =      |
+ * |-------------+-----+-----+-----+-----+-------------|           |------+------+------+------+------+------+-----------|
+ * |      '      |  Q  |  W  |  E  |  R  |   T  |      |           | Tab  |   Y  |   U  |   I  |   O  |   P  |    [      |
+ * |-------------+-----+-----+-----+-----+------|      |           |      |------+------+------+------+------+-----------|
+ * |    Ctrl     |  A  |  S  |  D  |  F  |   G  |------|           |------|   H  |   J  |   K  |   L  |   ;  |  Ctrl/-   |
+ * |-------------+-----+-----+-----+-----+------| Del  |           |Bspace|------+------+------+------+------+-----------|
+ * | LShift/CAPS |  Z  |  X  |  C  |  V  |   B  |      |           |      |   N  |   M  |   ,  |   .  |   /  |RShift/CAPS|
+ * `-------------+-----+-----+-----+-----+-------------'           `-------------+------+------+------+------+-----------'
+ *        | Home | End | Opt | Alt | Cmd |                                       | Left | Down |  Up  |Right |      |
+ *        `------------------------------'                                       `----------------------------------'
  *                                         ,------------.       ,-------------.
- *                                         |CAPS |      |       | PgDn | PgUp |
+ *                                         |     |      |       | PgDn | PgUp |
  *                                   ,-----|-----|------|       |------+------+------.
  *                                   |     |     |      |       |      |      |      |
- *                                   | Cmd |OSL 1|------|       |------|Enter |Space |
- *                                   |     |     | TT 2 |       | Esc  |      |      |
+ *                                   |OSL 1|TT 2 |------|       |------|Enter |Space |
+ *                                   |     |     |      |       |      |      |      |
  *                                   `------------------'       `--------------------'
  */
 [BASE] = LAYOUT_ergodox(
-      KC_GRAVE  , KC_1        , KC_2    , KC_3    , KC_4    , KC_5 , KC_TRNS ,
-      KC_BSLASH , KC_Q        , KC_W    , KC_E    , KC_R    , KC_T , KC_TRNS ,
-      KC_QUOTE  , CTL_T(KC_A) , KC_S    , KC_D    , KC_F    , KC_G ,
-      KC_LSFT   , KC_Z        , KC_X    , KC_C    , KC_V    , KC_B , KC_TAB  ,
-      KC_HOME   , KC_END      , KC_LALT , KC_LALT , KC_TRNS ,
+      KC_ESC          , KC_1   , KC_2    , KC_3    , KC_4    , KC_5 , KC_TRNS    ,
+      KC_QUOTE        , KC_Q   , KC_W    , KC_E    , KC_R    , KC_T , KC_TRNS    ,
+      KC_LCTRL        , KC_A   , KC_S    , KC_D    , KC_F    , KC_G ,
+      TD(TD_LSFTCAPS) , KC_Z   , KC_X    , KC_C    , KC_V    , KC_B , KC_DELETE  ,
+      KC_HOME         , KC_END , KC_LALT , KC_LALT , KC_LGUI ,
 
-                KC_CAPS , KC_TRNS ,
+                KC_TRNS , KC_TRNS ,
                           KC_TRNS ,
-      KC_LGUI , OSL(1)  , TT(2)   ,
+      OSL(1)  , TT(2)   , KC_TRNS ,
 
-      KC_TRNS   , KC_6    , KC_7  , KC_8     , KC_9    , KC_0              , KC_RBRC  ,
-      KC_DELETE , KC_Y    , KC_U  , KC_I     , KC_O    , KC_P              , KC_LBRC  ,
-                  KC_H    , KC_J  , KC_K     , KC_L    , RCTL_T(KC_SCOLON) , KC_MINUS ,
-      KC_BSPACE , KC_N    , KC_M  , KC_COMMA , KC_DOT  , KC_SLASH          , KC_RSFT  ,
+      KC_TRNS   , KC_6    , KC_7  , KC_8     , KC_9    , KC_0      , KC_EQUAL         ,
+      KC_TAB    , KC_Y    , KC_U  , KC_I     , KC_O    , KC_P      , KC_LBRC          ,
+                  KC_H    , KC_J  , KC_K     , KC_L    , KC_SCOLON , RCTL_T(KC_MINUS) ,
+      KC_BSPACE , KC_N    , KC_M  , KC_COMMA , KC_DOT  , KC_SLASH  , TD(TD_LSFTCAPS)  ,
       KC_LEFT   , KC_DOWN , KC_UP , KC_RIGHT , KC_TRNS ,
 
       KC_PGDOWN, KC_PGUP,
       KC_TRNS  ,
-      KC_ESC   , KC_ENTER, KC_SPACE
+      KC_TRNS  , KC_ENTER, KC_SPACE
     ),
 /* Keymap 1: Symbols
  *
  * ,-------------------------------------------.           ,-------------------------------------------.
- * |       |     |     |     |     |     |                 |     |     |  ^  |  &  |  |  |  ~  |       |
+ * |       |     |     |     |     |     |                 |     |  ^  |  &  |  *  |  |  |  ~  |       |
  * |-------+-----+-----+-----+-----+-----------|           |-----+-----+-----+-----+-----+-----+-------|
- * |       |     |     |     |     |     |     |           |     |     |     |  {  |  }  |     |       |
+ * |       |     |     |     |     |     |     |           |     |     |  [  |  ]  |  =  |     |       |
  * |-------+-----+-----+-----+-----+-----|     |           |     |-----+-----+-----+-----+-----+-------|
- * |       |     |     |     |     |     |-----|           |-----|     |  *  |  (  |  )  |  \  |       |
+ * |       |     |     |     |     |     |-----|           |-----|  <  |  (  |  )  |  -  |  >  |       |
  * |-------+-----+-----+-----+-----+-----|     |           |     |-----+-----+-----+-----+-----+-------|
- * |       |     |     |     |     |     |     |           |     |     |  =  |  [  |  ]  |     |       |
+ * |       |     |     |     |     |     |     |           |     |  \  |  {  |  }  |     |     |       |
  * `-------+-----+-----+-----+-----+-----------'           `-----------+-----+-----+-----+-----+-------'
  *   |     |     |     |     |     |                                   |     |     |     |     |     |
  *   `-----------------------------'                                   `-----------------------------'
@@ -104,11 +154,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
               KC_TRNS ,
     KC_TRNS , KC_TRNS , TO(0),
 
-    KC_TRNS , KC_CIRC , KC_AMPR        , KC_PIPE , KC_TILD , KC_TRNS   , KC_TRNS ,
-    KC_TRNS , KC_TRNS , KC_TRNS        , KC_LCBR , KC_RCBR , KC_TRNS   , KC_TRNS ,
-              KC_TRNS , KC_KP_ASTERISK , KC_LPRN , KC_RPRN , KC_BSLASH , KC_TRNS ,
-    KC_TRNS , KC_TRNS , KC_EQUAL       , KC_LBRC , KC_RBRC , KC_TRNS   , KC_TRNS ,
-                        KC_TRNS        , KC_TRNS , KC_TRNS , KC_EQUAL  , KC_TRNS ,
+    KC_TRNS , KC_CIRC   , KC_AMPR  , KC_ASTERISK , KC_PIPE  , KC_TILDE , KC_TRNS ,
+    KC_TRNS , KC_TRNS   , KC_LBRC  , KC_RBRC     , KC_EQUAL , KC_TRNS  , KC_TRNS ,
+              KC_LABK   , KC_LPRN  , KC_RPRN     , KC_MINUS , KC_RABK  , KC_TRNS ,
+    KC_TRNS , KC_BSLASH , KC_LCBR  , KC_RCBR     , KC_TRNS  , KC_TRNS  , KC_TRNS ,
+                          KC_TRNS  , KC_TRNS     , KC_TRNS  , KC_EQUAL , KC_TRNS ,
     KC_TRNS , KC_TRNS ,
     KC_TRNS ,
     KC_TRNS , KC_TRNS , KC_TRNS
