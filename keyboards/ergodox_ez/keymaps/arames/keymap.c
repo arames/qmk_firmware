@@ -64,11 +64,13 @@ enum KeyboardLayers {
   EXPERIMENTAL,
   SYMBOLS,
   NUMERIC,
+  MOVEMENT,
 
   // Aliases
   EXP = EXPERIMENTAL,
   SYM = SYMBOLS,
   NUM = NUMERIC,
+  MOV = MOVEMENT
 };
 
 #define LC(KC) LCTL_T(KC)
@@ -91,7 +93,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    *        |      |     |     | Alt | Cmd |                                     |Left |Down | Up  |Right|      |
    *        `------------------------------'                                     `------------------------------'
    *                                         ,-------------.       ,---------------.
-   *                                         |CAPS |       |       |TO BASE|TO EXP |
+   *                                         |CAPS |       |       |       |DF EXP |
    *                                   ,-----|-----|-------|       |-------+-------+------.
    *                                   |     |     |       |       |       |       |      |
    *                                   | OSL | TT  |-------|       |-------| Enter |Space |
@@ -104,33 +106,31 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    * - Provide quick access to `-`, used so often in the terminal.
    */
   [BASE] = LAYOUT_ergodox_pretty(
-      KC_ESC           , KC_1     , KC_2     , KC_3    , KC_4      , KC_5      , ________ , /**/ ________ , KC_6     , KC_7     , KC_8     , KC_9     , KC_0      , KC_EQUAL  ,                                
-      ________         , KC_Q     , KC_W     , KC_E    , KC_R      , KC_T      , KC_TAB   , /**/ KC_TAB   , KC_Y     , KC_U     , KC_I     , KC_O     , KC_P      , KC_LBRC   ,                                
-      LCTL_T(KC_QUOTE) , KC_A     , KC_S     , KC_D    , KC_F      , KC_G      ,            /**/            KC_H     , KC_J     , KC_K     , KC_L     , KC_SCOLON , RCTL_T(KC_MINUS) ,              
-      KC_LSHIFT        , KC_Z     , KC_X     , KC_C    , KC_V      , KC_B      , KC_DEL   , /**/ KC_BSPC  , KC_N     , KC_M     , KC_COMMA , KC_DOT   , KC_SLASH  , KC_RSHIFT ,                                
-      ________         , ________ , ________ , KC_LALT , KC_LGUI   ,                        /**/ KC_LEFT  , KC_DOWN  , KC_UP    , KC_RIGHT , ________ ,                                 
-                                                                     KC_CAPS   , ________ , /**/ TO(BASE) , TO(EXP) ,                                                                                         
-                                                                                 ________ , /**/ ________ ,                                                                                                    
-                                                         OSL(SYM)  , TT(NUM)   , ________ , /**/ ________ , KC_ENTER , KC_SPACE                                                                                
+      KC_ESC           , KC_1     , KC_2     , KC_3    , KC_4      , KC_5      , ________ , /**/ ________ , KC_6     , KC_7     , KC_8     , KC_9     , KC_0      , KC_EQUAL  ,
+      ________         , KC_Q     , KC_W     , KC_E    , KC_R      , KC_T      , KC_TAB   , /**/ KC_TAB   , KC_Y     , KC_U     , KC_I     , KC_O     , KC_P      , KC_LBRC   ,
+      LCTL_T(KC_QUOTE) , KC_A     , KC_S     , KC_D    , KC_F      , KC_G      ,            /**/            KC_H     , KC_J     , KC_K     , KC_L     , KC_SCOLON , RCTL_T(KC_MINUS) ,
+      KC_LSHIFT        , KC_Z     , KC_X     , KC_C    , KC_V      , KC_B      , KC_DEL   , /**/ KC_BSPC  , KC_N     , KC_M     , KC_COMMA , KC_DOT   , KC_SLASH  , KC_RSHIFT ,
+      ________         , ________ , ________ , KC_LALT , KC_LGUI   ,                        /**/ KC_LEFT  , KC_DOWN  , KC_UP    , KC_RIGHT , ________ ,
+                                                                     KC_CAPS   , ________ , /**/ ________ , DF(EXP) ,
+                                                                                 ________ , /**/ ________ ,
+                                                         OSL(SYM)  , TT(NUM)   , ________ , /**/ ________ , KC_ENTER , KC_SPACE
       ),
   /* Experimental
    *
    * Notes:
-   * - Most modifiers are made accessible on the home row. Settings are such
+   * - Most modifiers are made accessible on the home row. Settings are set so
    *   that fast typing will not trigger the modifiers.
    * - The presence of `[` in the basic layer is to enable `Ctrl+[` to escape in
    *   (n)vi(m).
    * - Provide quick access to `-`, used often in the terminal.
    * - Provide quick access to `'`, used often for coding and writing.
    * - Since the SYM and shift keys are very easy to press together, accessing
-   *   `_` and `"` is easy.
+   *   shifted special keys is very easy (e.g. curly brackets).
+   * - There are no directional keys. Use the MOVEMENT layer instead.
    *
    * TODO:
    * - Remove redundant keys:
    *   - Lshift is available on S and L, so is not needed with CAPS.
-   *   - Cmd is availble next to the left enter, so not needed in the left
-   *   hand bottom row.
-   *   - Directional keys could be removed in favour of a move layer.
    *
    * ,-------------------------------------------------------.           ,-----------------------------------------------------------.
    * |     Esc     |   1   |    2   |  3  |  4  |  5  |      |           |      |  6  |  7  |  8  |    9     |    0    |      =      |
@@ -141,32 +141,32 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    * |-------------+-------+--------+-----+-----+-----| Del  |           |Bspace|-----+-----+-----+----------+---------+-------------|
    * | LShift/CAPS |   Z   |    X   |  C  |  V  |  B  |      |           |      |  N  |  M  |  ,  |    .     |    /    | RShift/CAPS |
    * `-------------------------------------------------------'           `-----------------------------------------------------------'
-   *        |      |       |        | Alt | Cmd |                                     |Left |Down |    Up    |  Right  |      |
+   *        |      |       |        | Alt |     |                                     |     |     |          |         |      |
    *        `-----------------------------------'                                     `---------------------------------------'
-   *                                             ,-------------.       ,-------------.
-   *                                             |     |       |       |       |     |
-   *                                       ,-----|-----|-------|       |-------+-----+-----.
-   *                                       |GUI/ |     |       |       |       |GUI/ |     |
-   *                                       |Space|Enter|-------|       |-------|Enter|Space|
-   *                                       |     |     |       |       |       |     |     |
-   *                                       `-------------------'       `-------------------'
+   *                                             ,--------------.       ,---------------.
+   *                                             |TT NUM|       |       |       |DF BASE|
+   *                                       ,-----|------|-------|       |-------+-------+-----.
+   *                                       |GUI/ |      |       |       |       |       |GUI/ |
+   *                                       |Space|Enter |-------|       |-------| Enter |Space|
+   *                                       |     |      |TT MOV |       |       |       |     |
+   *                                       `--------------------'       `---------------------'
    */
   [EXP] = LAYOUT_ergodox_pretty(
-      KC_ESC          , KC_1     , KC_2     , KC_3        , KC_4         , KC_5     , ______ , /*|*/ _______ , KC_6     , KC_7     , KC_8     , KC_9     , KC_0          , KC_EQUAL  ,
-      ________        , KC_Q     , KC_W     , KC_E        , KC_R         , KC_T     , KC_TAB , /*|*/ KC_TAB  , KC_Y     , KC_U     , KC_I     , KC_O     , KC_P          , KC_LBRC   ,
-      KC_QUOTE        , LC(KC_A) , LS(KC_S) , LT(SYM,KC_D), LT(NUM,KC_F) , KC_G     ,          /*|*/           KC_H     , KC_J     , KC_K     , RS(KC_L) , RC(KC_SCOLON) , KC_MINUS ,
-      TD(TD_LSFTCAPS) , KC_Z     , KC_X     , KC_C        , KC_V         , KC_B     , KC_DEL , /*|*/ KC_BSPC , KC_N     , KC_M     , KC_COMMA , KC_DOT   , KC_SLASH      , TD(TD_RSFTCAPS) ,
-      ________        , ____     , ____     , KC_LALT     , KC_LGUI      ,                     /*|*/ KC_LEFT , KC_DOWN  , KC_UP    , KC_RIGHT , ______   ,
-                                                                           ________ , ______ , /*|*/ TO(BASE), ________ ,
-                                                                                      ______ , /*|*/ _______ ,
-                                                        LGUI_T(KC_SPACE) , KC_ENTER , ______ , /*|*/ _______ , KC_ENTER , GUI_T(KC_SPACE)
+      KC_ESC          , KC_1     , KC_2     , KC_3        , KC_4         , KC_5     , _______ , /*|*/ _______ , KC_6     , KC_7     , KC_8     , KC_9     , KC_0          , KC_EQUAL  ,
+      ________        , KC_Q     , KC_W     , KC_E        , KC_R         , KC_T     , KC_TAB  , /*|*/ KC_TAB  , KC_Y     , KC_U     , KC_I     , KC_O     , KC_P          , KC_LBRC   ,
+      KC_QUOTE        , LC(KC_A) , LS(KC_S) , LT(SYM,KC_D), LT(NUM,KC_F) , KC_G     ,           /*|*/           KC_H     , KC_J     , KC_K     , RS(KC_L) , RC(KC_SCOLON) , KC_MINUS ,
+      TD(TD_LSFTCAPS) , KC_Z     , KC_X     , KC_C        , KC_V         , KC_B     , KC_DEL  , /*|*/ KC_BSPC , KC_N     , KC_M     , KC_COMMA , KC_DOT   , KC_SLASH      , TD(TD_RSFTCAPS) ,
+      ________        , ____     , ____     , _______     , _______      ,                      /*|*/ _______ , _______  , _______  , ________ , ______   ,
+                                                                           TT(NUM)  , _______ , /*|*/ _______ , DF(BASE) ,
+                                                                                      _______ , /*|*/ _______ ,
+                                                        LGUI_T(KC_SPACE) , KC_ENTER , TT(MOV) , /*|*/ _______ , KC_ENTER , GUI_T(KC_SPACE)
       ),
 
   /* Symbols
    *
    * Notes:
    * - Symbols on the top row mostly match a "normal" layout.
-   * - since the base layer has the shift and symbol modifier/layer next to each
+   * - Since the base layer has the shift and symbol modifier/layer next to each
    *   other (on S and D), accessing the shifted symbols is easy, and we do not
    *   need to allocate a key for shifted symbols!
    *
@@ -228,7 +228,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    * |-------+-----+-----+-----+-----+-----------|           |-----+-----+-----+-----+-----+-----+-------|
    * |       |     |     |     |     |     |     |           |     |     |  7  |  8  |  9  |     |       |
    * |-------+-----+-----+-----+-----+-----|     |           |     |-----+-----+-----+-----+-----+-------|
-   * |       |     |     |           |     |-----|           |-----|  +  |  4  |  5  |  6  |  *  |       |
+   * |       |     |     |     |TTNUM|     |-----|           |-----|  +  |  4  |  5  |  6  |  *  |       |
    * |-------+-----+-----+-----+-----+-----|     |           |     |-----+-----+-----+-----+-----+-------|
    * |       |     |     |     |     |     |     |           |     |  -  |  1  |  2  |  3  |  /  |       |
    * `-------+-----+-----+-----+-----+-----------'           `-----------+-----+-----+-----+-----+-------'
@@ -245,7 +245,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [NUMERIC] = LAYOUT_ergodox_pretty(
       ________ , ________ , ________ , ________ , ________ , ________ , ________ , /*|*/ ________ , ________ , ________ , ________ , ________ , ________ , ________ ,
       ________ , ________ , ________ , ________ , ________ , ________ , ________ , /*|*/ ________ , ________ , KC_KP_7  , KC_KP_8  , KC_KP_9  , ________ , ________ ,
-      ________ , ________ , ________ , ________ , ________ , ________ ,            /*|*/            KC_PLUS  , KC_KP_4  , KC_KP_5  , KC_KP_6  , KC_PAST  , ________ ,
+      ________ , ________ , ________ , ________ , ________ , TT(NUM)  ,            /*|*/            KC_PLUS  , KC_KP_4  , KC_KP_5  , KC_KP_6  , KC_PAST  , ________ ,
       ________ , ________ , ________ , ________ , ________ , ________ , ________ , /*|*/ ________ , KC_MINS  , KC_KP_1  , KC_KP_2  , KC_KP_3  , KC_PSLS  , ________ ,
       ________ , ________ , ________ , ________ , ________ ,                       /*|*/                       KC_TAB   , KC_KP_0  , KC_PDOT  , KC_PEQL  , ________ ,
                                                              ________ , ________ , /*|*/ ________ , ________ ,
@@ -253,6 +253,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                                   ________ , ________ , ________ , /*|*/ ________ , ________ , ________
   ),
 
+  [MOVEMENT] = LAYOUT_ergodox_pretty(
+      ________ , ________ , ________    , ________ , KC_END   , ________   , ________ , /*|*/ ________ , ________ , ________ , ________ , ________ , KC_HOME  , ________ ,
+      ________ , ________ , A(KC_RIGHT) , ________ , ________ , ________   , ________ , /*|*/ ________ , ________ , KC_PGUP  , TT(MOV)  , ________ , ________ , ________ ,
+      ________ , ________ , ________    , KC_PGDN  , ________ , ________   ,            /*|*/            KC_LEFT  , KC_DOWN  , KC_UP    , KC_RIGHT , KC_END   , ________ ,
+      ________ , ________ , ________    , ________ , ________ , A(KC_LEFT) , ________ , /*|*/ ________ , ________ , ________ , ________ , ________ , ________ , ________ ,
+      ________ , ________ , ________    , ________ , ________ ,                         /*|*/                       ________ , ________ , ________ , ________ , ________ ,
+                                                                ________   , ________ , /*|*/ ________ , ________ ,
+                                                                             ________ , /*|*/ ________ ,
+                                                     ________ , ________   , ________ , /*|*/ ________ , ________ , ________
+  )
 };
 
 bool get_ignore_mod_tap_interrupt(uint16_t keycode) {
@@ -285,6 +295,12 @@ void matrix_scan_user(void) {
   uint8_t layer = biton32(layer_state);
 
   switch (layer) {
+    case NUMERIC:
+      ergodox_right_led_2_on();
+      break;
+    case MOVEMENT:
+      ergodox_right_led_3_on();
+      break;
     default:
       break;
   }
