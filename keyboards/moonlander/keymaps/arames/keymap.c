@@ -20,7 +20,6 @@
 
 #include QMK_KEYBOARD_H
 #include "version.h"
-// TODO: #include "rgblight.h"
 
 // Layers ----------------------------------------------------------------------
 
@@ -39,10 +38,6 @@ enum KeyboardLayers {
   MOV = MOVEMENT,
   FN = FUNCTION
 };
-
-// TODO: enum custom_keycodes {
-// TODO:     VRSN = ML_SAFE_RANGE,
-// TODO: };
 
 // The main design elements are:
 // * Modifiers on the home row keys.
@@ -98,10 +93,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    * is intended as a rarely used layer, when custom functions (e.g. home row
    * modifiers) should not get in the way.
    *
+   * TODO: Add standard locations for ctrl and shift ?
+   *
    * ,-----------------------------------------.     ,------------------------------------------.
    * | Esc |  1  |  2  |  3  |  4  |  5  |     |     |      |  6  |  7  |  8  |  9  |  0  |  =  |
    * |-----+-----+-----+-----+-----+-----------|     |------+-----+-----+-----+-----+-----+-----|
-   * |     |  Q  |  W  |  E  |  R  |  T  | Tab |     | Tab  |  Y  |  U  |  I  |  O  |  P  |  [  |
+   * |     |  Q  |  W  |  E  |  R  |  T  | Tab |     | Tab  |  Y  |  U  |  I  |  O  |  P  |     |
    * |-----+-----+-----+-----+-----+-----|-----|     |------|-----+-----+-----+-----+-----+-----|
    * |  '  |  A  |  S  |  D  |  F  |  G  | Del |     |Bspace|  H  |  J  |  K  |  L  |  ;  |  -  |
    * |-----+-----+-----+-----+-----+-----|-----'     `------|-----+-----+-----+-----+-----+-----|
@@ -119,7 +116,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    */
   [STANDARD] = LAYOUT_moonlander(
       KC_ESC , KC_1 , KC_2 , KC_3 , KC_4   , KC_5  , KC_NO , /*|*/ KC_NO  , KC_6  , KC_7   , KC_8   , KC_9  , KC_0   , KC_EQL ,
-      KC_NO  , KC_Q , KC_W , KC_E , KC_R   , KC_T  , KC_TAB, /*|*/ KC_TAB , KC_Y  , KC_U   , KC_I   , KC_O  , KC_P   , KC_LBRC,
+      KC_NO  , KC_Q , KC_W , KC_E , KC_R   , KC_T  , KC_TAB, /*|*/ KC_TAB , KC_Y  , KC_U   , KC_I   , KC_O  , KC_P   , KC_NO  ,
       KC_QUOT, KC_A , KC_S , KC_D , KC_F   , KC_G  , KC_DEL, /*|*/ KC_BSPC, KC_H  , KC_J   , KC_K   , KC_L  , KC_SCLN, KC_MINS,
       KC_NO  , KC_Z , KC_X , KC_C , KC_V   , KC_B  ,         /*|*/          KC_N  , KC_M   , KC_COMM, KC_DOT, KC_SLSH, KC_NO  ,
       DF(1)  , KC_NO, KC_NO, KC_NO, KC_LALT,         KC_NO , /*|*/ KC_NO  ,         KC_RALT, KC_NO  , KC_NO , KC_NO  , KC_NO  ,
@@ -128,6 +125,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   /* Base layer
    *
+   * The main design elements are:
+   * - Modifiers on the home row keys.
+   * - Left-hand layer access, with the right hand accessing keys.
+
    * Notes:
    * - Most modifiers are made accessible on the home row. Settings are set so
    *   that fast typing will not trigger the modifiers.
@@ -138,12 +139,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    * - There are no directional keys. Use the MOVEMENT layer instead.
    * - Provide quick access to `-`, used often in the terminal.
    * - Provide quick access to `'`, used often for coding and writing.
-   * - The presence of `[` in the base layer is to enable `Ctrl+[` to escape in
+   * - The presence of `[` in the baInput_254ee183087d0b32se layer is to enable `Ctrl+[` to escape in
    *   (n)vi(m) or tmux.
-   *
-   * - The (hold) shift key on the left hand is more convenient than CAPS
-   *   TODO: This does not always work well when the letter `S` is required. I
-   *   need to find something better.
    *
    */
 #define LC(KC) LCTL_T(KC)
@@ -152,7 +149,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #define RS(KC) RSFT_T(KC)
    [BASE] = LAYOUT_moonlander(
        _______, _______ , _______ , _______     , _______       , _______, _______,     _______, _______, _______        , _______, _______ , _______    , _______,
-       _______, _______ , _______ , _______     , _______       , _______, _______,     _______, _______, _______        , _______, _______ , _______    , _______,
+       _______, _______ , _______ , _______     , _______       , _______, _______,     _______, _______, _______        , _______, _______ , _______    , KC_LBRC,
        _______, LC(KC_A), LS(KC_S), LT(SYM,KC_D), LT(NUM,KC_F)  , _______, _______,     _______, _______, _______        , _______, RS(KC_L), RC(KC_SCLN), _______,
        _______, _______ , _______ , _______     , _______       , _______,                       _______, _______        , _______, _______, _______     , _______,
        DF(0)  , _______ , _______ , _______     , _______       ,          TT(FN) ,     KC_CAPS,          _______        , _______, _______ , _______    , _______,
@@ -225,7 +222,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     *
     * This immitates vim-style movement through standard keys.
     *
-    * TODO
+    * TODO: Fix for Linux
     *
     * ,-----------------------------------------.     ,------------------------------------------.
     * |     |     |     |     |     |     |     |     |      |     |     |     |     |     |     |
@@ -259,19 +256,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     *
     * Function and other special keys.
     *
-    * TODO
+    * TODO: Add media and other keys.
     *
-    * ,-----------------------------------------.     ,------------------------------------------.
-    * |     |     |     |     |     |     |     |     |      |     |     |     |     |     |     |
-    * |-----+-----+-----+-----+-----+-----------|     |------+-----+-----+-----+-----+-----+-----|
-    * |     |     |     |     |     |     |     |     |      |     |     |     |     |     |     |
-    * |-----+-----+-----+-----+-----+-----|-----|     |------|-----+-----+-----+-----+-----+-----|
-    * |     |     |     |     |     |     |     |     |      |     |     |     |     |     |     |
-    * |-----+-----+-----+-----+-----+-----|-----'     `------|-----+-----+-----+-----+-----+-----|
-    * |     |     |     |     |     |     |                  |     |     |     |     |     |     |
-    * `------------------------------------                  ------------------------------------|
-    * |     |     |     |     |     |                              |     |     |     |     |     |
-    * `-----------------------------'                              `-----------------------------'
+    * ,-----------------------------------------.     ,-----------------------------------------------.
+    * |     | F1  | F2  | F3  | F4  | F5  |     |     |      | F6  | F7  | F8  | F9  |     | RGB_TOG  |
+    * |-----+-----+-----+-----+-----+-----------|     |------+-----+-----+-----+-----+-----+----------|
+    * |     |     |     |     |     |     |     |     |      |     | F7  | F8  | F9  |     | RGB_MOD  |
+    * |-----+-----+-----+-----+-----+-----|-----|     |------|-----+-----+-----+-----+-----+----------|
+    * |     |     |     |     |     |     |     |     |      |     | F4  | F5  | F6  |     | RGB_RMOD |
+    * |-----+-----+-----+-----+-----+-----|-----'     `------|-----+-----+-----+-----+-----+----------|
+    * |     |     |     |     |     |     |                  |     | F1  | F2  | F3  |     |          |
+    * `------------------------------------                  -----------------------------------------|
+    * |     |     |     |     |     |                              |     |     |     |     |          |
+    * `-----------------------------'                              `----------------------------------'
     *                               ,-----------.     ,------------.
     *                               |           |     |            |
     *                         ,-----+-----------|     |------------+-----.
@@ -288,36 +285,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______, _______, _______,          _______,     _______,          _______, _______, _______, _______, _______,
                                             _______, _______, _______,     _______, _______, _______
     ),
-
-
-    /*
-    [BASE] = LAYOUT_moonlander(
-        KC_EQL,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_LEFT,           KC_RGHT, KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS,
-        KC_DEL,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    TG(SYMB),         TG(SYMB), KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSLS,
-        KC_BSPC, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_HYPR,           KC_MEH,  KC_H,    KC_J,    KC_K,    KC_L,    LT(MDIA, KC_SCLN), LGUI_T(KC_QUOT),
-        KC_LSFT, LCTL_T(KC_Z),KC_X,KC_C,    KC_V,    KC_B,                                KC_N,    KC_M,    KC_COMM, KC_DOT,  RCTL_T(KC_SLSH), KC_RSFT,
-    LT(SYMB,KC_GRV),WEBUSB_PAIR,A(KC_LSFT),KC_LEFT, KC_RGHT,  LALT_T(KC_APP),    RCTL_T(KC_ESC),   KC_UP,   KC_DOWN, KC_LBRC, KC_RBRC, MO(SYMB),
-                                            KC_SPC,  KC_BSPC, KC_LGUI,           KC_LALT,  KC_TAB,  KC_ENT
-    ),
-
-    [SYMB] = LAYOUT_moonlander(
-        VRSN,    KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   _______,           _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
-        _______, KC_EXLM, KC_AT,   KC_LCBR, KC_RCBR, KC_PIPE, _______,           _______, KC_UP,   KC_7,    KC_8,    KC_9,    KC_ASTR, KC_F12,
-        _______, KC_HASH, KC_DLR,  KC_LPRN, KC_RPRN, KC_GRV,  _______,           _______, KC_DOWN, KC_4,    KC_5,    KC_6,    KC_PLUS, _______,
-        _______, KC_PERC, KC_CIRC, KC_LBRC, KC_RBRC, KC_TILD,                             KC_AMPR, KC_1,    KC_2,    KC_3,    KC_BSLS, _______,
-        EEP_RST, _______, _______, _______, _______,          RGB_VAI,           RGB_TOG,          _______, KC_DOT,  KC_0,    KC_EQL,  _______,
-                                            RGB_HUD, RGB_VAD, RGB_HUI, TOGGLE_LAYER_COLOR,_______, _______
-    ),
-
-    [MDIA] = LAYOUT_moonlander(
-        LED_LEVEL,_______,_______, _______, _______, _______, _______,           _______, _______, _______, _______, _______, _______, RESET,
-        _______, _______, _______, KC_MS_U, _______, _______, _______,           _______, _______, _______, _______, _______, _______, _______,
-        _______, _______, KC_MS_L, KC_MS_D, KC_MS_R, _______, _______,           _______, _______, _______, _______, _______, _______, KC_MPLY,
-        _______, _______, _______, _______, _______, _______,                             _______, _______, KC_MPRV, KC_MNXT, _______, _______,
-        _______, _______, _______, KC_BTN1, KC_BTN2,         _______,            _______,          KC_VOLU, KC_VOLD, KC_MUTE, _______, _______,
-                                            _______, _______, _______,           _______, _______, _______
-    ),
-    */
 };
 // clang-format on
 
@@ -332,37 +299,8 @@ bool get_ignore_mod_tap_interrupt(uint16_t keycode, keyrecord_t *record) {
   }
 }
 
-// TODO
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Use this once to set the default layer.
     // set_single_persistent_default_layer(BASE);
-    if (record->event.pressed) {
-        switch (keycode) {
-            // case VRSN:
-            //    SEND_STRING (QMK_KEYBOARD "/" QMK_KEYMAP " @ " QMK_VERSION);
-            //    return false;
-        }
-    }
-
-    //switch (get_highest_layer(state)) {
-    //    case BASE:
-    //        rgblight_setrgb(0x00, 0x00, 0xFF);
-
-    //        break;
-    //}
-
-    //uint8_t layer = biton32(layer_state);
-    //switch (layer) {
-    //  case BASE:
-    //    rgblight_setrgb_blue()
-    //    break;
-    //  case SYMBOLS:
-    //    rgblight_setrgb_orange()
-    //    break;
-    //  case NUMERIC:
-    //    rgblight_setrgb_red()
-    //    break;
-    //}
-
     return true;
 }
