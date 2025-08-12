@@ -337,6 +337,58 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
+bool led_update_user(led_t led_state) {
+    return true;
+}
+
+void caps_word_set_user(bool active) {
+    ML_LED_1(false);
+    ML_LED_2(false);
+    ML_LED_3(false);
+    ML_LED_4(false);
+    ML_LED_5(false);
+    ML_LED_6(false);
+
+    if (active) {
+        ML_LED_3(true); ML_LED_6(true);
+    }
+}
+
+static const struct {
+    bool enabled;
+    uint8_t r, g, b;
+} layers_color_config[] = {
+    [STANDARD] = {false,   0,   0,   0},
+    [BASE]     = {false,   0,   0,   0},
+    [SYMBOLS]  = {true,  255, 192,   0},
+    [NUMERIC]  = {true,    0,   0, 255},
+    [MOVEMENT] = {true,    0, 255,   0},
+    [FUNCTION] = {true,  255,   0,   0},
+};
+
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+   if (get_highest_layer(layer_state) > 0) {
+       uint8_t layer = get_highest_layer(layer_state);
+
+       // Layer config: [layer]{enabled, r, g, b}
+       if (!layers_color_config[layer].enabled) {
+           return false;
+       }
+
+       for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
+           for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
+               uint8_t index = g_led_config.matrix_co[row][col];
+
+               if (index >= led_min && index < led_max && index != NO_LED &&
+               keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS) {
+                   rgb_matrix_set_color(index, layers_color_config[layer].r, layers_color_config[layer].g, layers_color_config[layer].b);
+               }
+           }
+       }
+   }
+   return false;
+}
+
 void keyboard_post_init_user(void) {
     // Use this once and comment out, to set the default layer, to avoid repeating the write to EEPROM on every init.
     //set_single_persistent_default_layer(BASE);
